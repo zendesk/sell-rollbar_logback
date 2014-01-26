@@ -7,10 +7,10 @@ This is the notifier library for integrating Java apps with [Rollbar](https://ro
 Setup
 -------------
 
-You need to add these libraries to your classpath:
- * [rollbar-java-0.1](https://github.com/rafael-munoz/rollbar-java/blob/release/rollbar-java/0.1/rollbar-java-0.1.jar?raw=true)
- * [log4j-1.2.14](https://github.com/rafael-munoz/rollbar-java/blob/release/log4j/1.2.14/log4j-1.2.14.jar?raw=true)
- * [json-20120521](https://github.com/rafael-munoz/rollbar-java/blob/release/json/20120521/org.json-20120521.jar?raw=true)
+You need to add these libraries from the [release] (https://github.com/rafael-munoz/rollbar-java/releases/download/v0.1/rollbar-java-v0.1.zip) to your classpath:
+ * rollbar-java-0.1
+ * log4j-1.2.14
+ * json-20120521
 
 
 The easy way to use the rollbar notifier is configuring a Log4j appender. Otherwise if you don't use log4j you can use the rollbar notifier directly with a very simple API.
@@ -142,7 +142,7 @@ Log4j Context
 
 The log4j appender would use the MDC log4j as the notification context. 
 
-A very useful pattern is to use a J2EE filter to add helpful parameters to the MDC log4j context. See for instance the [example] (https://github.com/rafael-munoz/rollbar-java/blob/release/json/20120521/org.json-20120521.jar?raw=true)
+A very useful pattern is to use a J2EE filter to add helpful parameters to the MDC log4j context. See for instance the [filter example] (https://github.com/rafael-munoz/rollbar-java/blob/master/src/com/muantech/rollbar/java/RollbarFilter.java)
 
 Acknowledges
 --------------
