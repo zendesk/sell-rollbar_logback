@@ -31,7 +31,6 @@ public class RollbarFilter implements Filter {
             filterChain.doFilter(servletRequest, servletResponse);
 
         } finally {
-            MDC.remove("requestId");
             MDC.remove("request");
             MDC.remove("session");
         }
