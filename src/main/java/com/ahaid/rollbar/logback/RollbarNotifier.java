@@ -1,4 +1,4 @@
-package com.muantech.rollbar.java;
+package com.ahaid.rollbar.logback;
 
 import java.net.MalformedURLException;
 import java.net.URL;

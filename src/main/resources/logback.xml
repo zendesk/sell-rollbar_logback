@@ -1,0 +1,19 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} TKD [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="Rollbar" class="com.ahaid.rollbar.logback.RollbarAppender">
+        <url>https://api.rollbar.com/api/1/item/</url>
+        <apiKey>1d7242f3d13e458280c5a54871a59507</apiKey>
+        <environment>local</environment>
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="Rollbar" />
+    </root>
+</configuration>

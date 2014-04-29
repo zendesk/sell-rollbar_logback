@@ -1,4 +1,4 @@
-package com.muantech.rollbar.java;
+package com.ahaid.rollbar.logback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
