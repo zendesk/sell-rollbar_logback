@@ -35,7 +35,7 @@ public class RollbarNotifier {
     });
 
     public enum Level {
-        DEBUG, INFO, WARNING, ERROR
+        DEBUG, INFO, WARN, ERROR
     }
 
     public static void init(String urlString, String apiKey, String env) throws JSONException, UnknownHostException {

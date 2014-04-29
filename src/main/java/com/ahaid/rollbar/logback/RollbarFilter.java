@@ -1,5 +1,7 @@
 package com.ahaid.rollbar.logback;
 
+import org.slf4j.MDC;
+
 import java.io.IOException;
 
 import javax.servlet.Filter;
@@ -11,7 +13,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.MDC;
 
 public class RollbarFilter implements Filter {
 
@@ -23,10 +24,10 @@ public class RollbarFilter implements Filter {
 
         try {
             HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
-            MDC.put("request", httpRequest);
+            MDC.put("request", servletRequest.toString());
 
             HttpSession session = httpRequest.getSession(false);
-            if (session != null) MDC.put("session", httpRequest);
+            if (session != null) MDC.put("session", session.toString());
 
             filterChain.doFilter(servletRequest, servletResponse);
 

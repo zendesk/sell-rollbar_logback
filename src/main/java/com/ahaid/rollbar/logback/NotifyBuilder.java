@@ -15,12 +15,15 @@ import java.util.Map.Entry;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.helpers.LogLog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotifyBuilder {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final String NOTIFIER_VERSION = "0.0.1";
 
@@ -376,7 +379,7 @@ public class NotifyBuilder {
 
             trace.put("raw", baos.toString("UTF-8"));
         } catch (Exception e) {
-            LogLog.error("Exception printing stack trace.", e);
+            logger.error("Exception printing stack trace.", e);
         }
 
         JSONObject exceptionData = new JSONObject();
