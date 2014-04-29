@@ -10,11 +10,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.helpers.LogLog;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RollbarNotifier {
+
+    private static final Logger logger = LoggerFactory.getLogger("RollbarNotifier");
 
     public static final int MAX_RETRIES = 5;
 
@@ -90,7 +93,7 @@ public class RollbarNotifier {
                     JSONObject payload = BUILDER.build(level.toString(), message, throwable, context);
                     postJson(payload);
                 } catch (Throwable e) {
-                    LogLog.error("There was an error notifying the error.", e);
+                    logger.error("There was an error notifying the error.", e);
                 }
             }
 
@@ -125,7 +128,7 @@ public class RollbarNotifier {
         try {
             url = new URL(urlString);
         } catch (MalformedURLException e) {
-            LogLog.error("Error parsing the notifiying URL", e);
+            logger.error("Error parsing the notifiying URL", e);
             throw new IllegalArgumentException();
         }
         return url;
