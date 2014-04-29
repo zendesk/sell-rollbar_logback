@@ -1,79 +1,44 @@
-THIS REPOSITORY IS UNDER CONSTRUCTIONTION
-Do not attempt to use the code here until this message is removed
-
-Rollbar Java
+Rollbar Logback
 =============
 
-This is the notifier library for integrating Java apps with [Rollbar](https://rollbar.com/), the error aggregation service. You will need a Rollbar account: sign up for an account [here](https://rollbar.com/signup/).
+This is the Logback appender for use with [Rollbar](https://rollbar.com/), the error aggregation service. You will need a Rollbar account: sign up for an account [here](https://rollbar.com/signup/).
 
 
-Setup
+Setup via SBT
 -------------
 
-You need to add these libraries from the [release] (https://github.com/rafael-munoz/rollbar-java/releases/download/v0.1/rollbar-java-v0.1.zip) to your classpath:
- * rollbar-java-0.1
- * log4j-1.2.14
- * json-20120521
+Add a library dependency to your build.sbt file
+	
+	libraryDependencies += "com.github.ahaid" % "rollbar-logback_2.10" % "0.1-SNAPSHOT"
+     
 
+The easy way to use the rollbar notifier is configuring a Logback appender. Otherwise if you don't use Logback you can use the rollbar notifier directly with a very simple API.
 
-The easy way to use the rollbar notifier is configuring a Log4j appender. Otherwise if you don't use log4j you can use the rollbar notifier directly with a very simple API.
-
-Log4j
+Logback
 -----
 
-Example:
-
-	log4j.rootLogger=DEBUG, stdout, rollbar
-
-	log4j.appender.stdout=org.apache.log4j.ConsoleAppender
-	log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
-	log4j.appender.stdout.layout.ConversionPattern=[%d,%p] [%c{1}.%M:%L] %m%n
-
-	log4j.appender.rollbar=airbrake.AirbrakeAppender	
-	log4j.appender.rollbar.api_key=YOUR_ROLLBAR_API_KEY
-	#log4j.appender.rollbar.env=development
-	#log4j.appender.rollbar.env=production
-	log4j.appender.rollbar.env=test
-	log4j.appender.rollbar.enabled=true
-	log4j.appender.rollbar.onlyThrowable=true
-	log4j.appender.rollbar.notifyLevel=error
-	log4j.appender.rollbar.logs=true
-	log4j.appender.rollbar.limit=1000
-	#log4j.appender.rollbar.url=https://api.rollbar.com/api/1/item/
-
-or in XML format:
-
-	<appender name="ROLLBAR" class="com.muantech.rollbar.java.RollbarAppender">
-	    <param name="enabled" value="false"/>
-	    <param name="api_key" value="YOUR_ROLLBAR_API_KEY"/> 
-	    <param name="env" value="test"/>
-		<param name="onlyThrowable" value="true" />
-		<param name="notifyLevel" value="error" />
-		<param name="logs" value="true" />
-		<param name="limit" value="1000" />
-		<param name="url" value="https://api.rollbar.com/api/1/item/" />
-	 	<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS}-[%X{user}:%X{requestId}] %-5p %c{1} - %m%n" />
-		</layout>
-	</appender>
-
-	<root>
+	<appender name="ROLLBAR" class="com.ahaid.rollbar.logback.RollbarAppender">
+        <apiKey>[YOUR APIKEY HERE]</apiKey>
+        <environment>local</environment>
+        <enabled>true</enabled>
+        <onlyThrowable>false</onlyThrowable>
+        <logs>true</logs>
+        <limit>1000</limit>
+    </appender>
+	<root level="debug">
 		<appender-ref ref="ROLLBAR"/>
 	</root>
 	
 Appender parameters:
+
 * api_key: The rollbar API key. Mandatory.
-* env: Environment. i.e. production, test, development. Mandatory.
+* environment: Environment. i.e. production, test, development. Mandatory.
 * enabled: Enable the notifications. Default: true
 * onlyThrowable: Only notify throwables skipping messages. Default: true
-* notifyLevel: Only notify if the log4j level is equal or greater of this value. Default: error
 * logs: Send the last log lines attached to the notification. The log lines would be formatted with the configured layout. Default: true
 * limit: The number of log lines to send attached to the notification. Default: 1000
 * url: The Rollbar API url. Default: https://api.rollbar.com/api/1/item/
 
-It's important to distinguish between:
-- The usual Log4j level: Log lines with level equal or greater than the Log4j level will be added to the logs buffer to be attached to the notifications and only notified if fulfill additional criteria (onlyThrowable and notifyLevel).
-- The notifyLevel setting: Only log lines with level equal or greater than notifyLevel will be notify.
 
 Directly
 ------------------------------
@@ -121,6 +86,7 @@ The rollbar notifier use a context to add additional information to the notifica
 
 
 The rollbar notifier library can recognize the values with the following keys:
+
 * platform: String.
 * framework: String.
 * user: String. User ID.
@@ -140,17 +106,17 @@ The rollbar notifier library can recognize the values with the following keys:
 
 Most of these values only make sense for J2EE applications.
 
-Log4j Context
+Logback Context
 ------------------------------
 
-The log4j appender would use the MDC log4j as the notification context. 
+The logback appender would use the MDC logback as the notification context. 
 
-A very useful pattern is to use a J2EE filter to add helpful parameters to the MDC log4j context. See for instance the [filter example] (https://github.com/rafael-munoz/rollbar-java/blob/master/src/com/muantech/rollbar/java/RollbarFilter.java)
+A very useful pattern is to use a J2EE filter to add helpful parameters to the MDC logback context. See for instance the [filter example] (https://github.com/ahaid/rollbar-logback/blob/master/src/main/java/com/ahaid/rollbar/logback/RollbarFilter.java)
 
 Acknowledges
 --------------
 
-This library has been inspired by [airbrake-java] (https://github.com/airbrake/airbrake-java)
+This library has been inspired by [rollbar-java] (https://github.com/rafael-munoz/rollbar-java)
 
 License
 -------
@@ -158,7 +124,7 @@ License
 <pre>
 This software is licensed under the Apache 2 license, quoted below.
 
-Copyright 2014 Rafael Mu�oz Vega
+Copyright 2014 Adam Haid
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
