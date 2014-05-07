@@ -1,10 +1,11 @@
-import sbt.Keys._
+import SonatypeKeys._
 
-addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.2")
+// Import default settings. This changes `publishTo` settings to use the Sonatype repository and add several commands for publishing.
+sonatypeSettings
 
 name := "rollbar-logback"
 
-version := "0.1-SNAPSHOT"
+version := "1.0"
 
 libraryDependencies ++= Seq(
   "org.slf4j"       % "slf4j-api"       % "1.7.7",
@@ -13,15 +14,6 @@ libraryDependencies ++= Seq(
   "javax.servlet"   % "servlet-api"     % "2.5",
   "org.json"        % "json"            % "20140107"
 )
-
-publishTo <<= (version) { version: String =>
-  val nexus = "https://oss.sonatype.org/"
-  if (version.trim.endsWith("SNAPSHOT")) {
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  } else {
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  }
-}
 
 organization :=  "com.github.ahaid"
 
