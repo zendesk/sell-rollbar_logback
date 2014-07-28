@@ -1,0 +1,81 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.tapstream</groupId>
+	<artifactId>rollbar-logback</artifactId>
+	<packaging>jar</packaging>
+	<description>rollbar-logback</description>
+	<version>0.1-SNAPSHOT</version>
+	<name>rollbar-logback</name>
+	<organization>
+		<name>Tapstream</name>
+	</organization>
+	<url>https://github.com/tapstream/rollbar-logback</url>
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>git@github.com:tapstream/rollbar-logback.git</url>
+		<connection>scm:git:git@github.com:tapstream/rollbar-logback.git</connection>
+	</scm>
+	<developers>
+		<developer>
+			<id>ahaid</id>
+			<name>Adam Haid</name>
+			<url>https://github.com/ahaid</url>
+		</developer>
+		<developer>
+			<id>nsitarz</id>
+			<name>Nick Sitarz</name>
+			<url>https://github.com/nsitarz</url>
+		</developer>
+	</developers>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<jdk.target>1.7</jdk.target>
+		<jdk.source>1.7</jdk.source>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<target>${jdk.target}</target>
+					<source>${jdk.source}</source>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.7</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20140107</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+</project>
