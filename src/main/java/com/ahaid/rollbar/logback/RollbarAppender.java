@@ -21,6 +21,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     private String apiKey;
     private String environment;
     private boolean async = true;
+    private IHttpRequester httpRequester = new HttpRequester();
     
     RollbarAppender(){
         try {
@@ -28,6 +29,10 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         } catch (MalformedURLException e) {
             addError("Error initializing url", e);
         }
+    }
+    
+    public void setHttpRequester(IHttpRequester httpRequester){
+        this.httpRequester = httpRequester;
     }
  
     public void setUrl(String url) {
@@ -52,23 +57,32 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
 
     @Override
     public void start() {
+        boolean error = false;
+        
         if (this.url == null) {
             addError("No url set for the appender named [" + getName() + "].");
+            error = true;
         }
         if (this.apiKey == null) {
             addError("No apiKey set for the appender named [" + getName() + "].");
+            error = true;
         }
         if (this.environment == null) {
             addError("No environment set for the appender named [" + getName() + "].");
+            error = true;
         }
         
         try {
             payloadBuilder = new NotifyBuilder(apiKey, environment);
         } catch (JSONException | UnknownHostException e) {
             addError("Error building NotifyBuilder", e);
+            error = true;
         }
         
-        super.start();
+        if (!error){
+            super.start();
+        }
+        
     }
 
     @Override
@@ -109,8 +123,8 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     
     private void sendRequest(HttpRequest request){
         try {
-            int statusCode = request.execute();
-            if (statusCode >= 200 && statusCode < 299){
+            int statusCode = httpRequester.send(request);
+            if (statusCode >= 200 && statusCode <= 299){
                 // Everything went OK
             } else {
                 addError("Non-2xx response from Rollbar: " + statusCode);
