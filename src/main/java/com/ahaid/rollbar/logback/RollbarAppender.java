@@ -23,7 +23,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     private boolean async = true;
     private IHttpRequester httpRequester = new HttpRequester();
     
-    RollbarAppender(){
+    public RollbarAppender(){
         try {
             this.url = new URL("https://api.rollbar.com/api/1/item/");
         } catch (MalformedURLException e) {

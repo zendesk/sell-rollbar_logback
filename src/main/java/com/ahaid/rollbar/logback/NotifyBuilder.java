@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory;
 
 public class NotifyBuilder {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private static final String NOTIFIER_VERSION = "0.0.1";
 
     private final String accessToken;
@@ -372,14 +370,12 @@ public class NotifyBuilder {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos);
-
             throwable.printStackTrace(ps);
             ps.close();
             baos.close();
-
             trace.put("raw", baos.toString("UTF-8"));
         } catch (Exception e) {
-            logger.error("Exception printing stack trace.", e);
+            throw new RuntimeException(e);
         }
 
         JSONObject exceptionData = new JSONObject();
