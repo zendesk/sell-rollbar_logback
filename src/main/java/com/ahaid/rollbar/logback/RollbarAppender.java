@@ -81,8 +81,11 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         String levelName = event.getLevel().toString().toLowerCase();
         String message = event.getMessage();
         Map<String, Object> propertyMap = (Map)event.getMDCPropertyMap();
+        
+        Throwable throwable = null;
         ThrowableProxy throwableProxy = (ThrowableProxy)event.getThrowableProxy();
-        Throwable throwable = throwableProxy.getThrowable();
+        if (throwableProxy != null)
+            throwable = throwableProxy.getThrowable();
         
         final JSONObject payload = payloadBuilder.build(levelName, message, throwable, propertyMap);
         final HttpRequest request = new HttpRequest(url, "POST");
