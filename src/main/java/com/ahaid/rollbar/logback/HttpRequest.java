@@ -14,10 +14,7 @@ public class HttpRequest {
     private static final int REQUEST_TIMEOUT = 5000;
 
     private final URL url;
-
-    private HttpURLConnection connection;
     private final HashMap<String, String> requestProperties;
-
     private String method;
     private byte[] body;
 
@@ -36,7 +33,7 @@ public class HttpRequest {
         this.method = method;
     }
 
-    public void setRequestProperty(String key, String value) {
+    public void setHeader(String key, String value) {
         requestProperties.put(key, value);
     }
 
@@ -48,16 +45,11 @@ public class HttpRequest {
         }
     }
 
-    public boolean execute() {
+    public int execute() throws IOException{
 
         attemptNumber++;
 
-        try {
-            connection = (HttpURLConnection) url.openConnection();
-        } catch (IOException e) {
-            // don't retry
-            return true;
-        }
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         try {
             connection.setRequestMethod(this.method);
@@ -73,16 +65,11 @@ public class HttpRequest {
                 writeBody(body, connection);
             }
 
-            if (connection.getResponseCode() != 200) return false;
-
-        } catch (IOException e) {
-            // don't retry
-            return true;
+            return connection.getResponseCode();
         } finally {
             connection.disconnect();
         }
 
-        return true;
     }
 
     private void writeBody(byte[] body, HttpURLConnection connection) throws IOException {
