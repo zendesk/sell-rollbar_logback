@@ -1,4 +1,4 @@
-package com.tapstream.rollbar.logback;
+package com.tapstream.rollbar;
 
 import java.io.IOException;
 import java.util.Enumeration;

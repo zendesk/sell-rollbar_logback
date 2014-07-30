@@ -1,4 +1,4 @@
-package com.tapstream.rollbar.logback;
+package com.tapstream.rollbar;
 
 import static org.junit.Assert.*;
 
@@ -9,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
-import com.tapstream.rollbar.logback.HttpRequest;
-import com.tapstream.rollbar.logback.RollbarAppender;
+import com.tapstream.rollbar.HttpRequest;
+import com.tapstream.rollbar.RollbarAppender;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -111,7 +111,7 @@ public class TestRollbarAppender {
         JSONObject lastFrame = frames.getJSONObject(frames.length() - 1);
         assertEquals("TestRollbarAppender.java", lastFrame.get("filename"));
         assertEquals("testThrowable", lastFrame.get("method"));
-        assertEquals("com.tapstream.rollbar.logback.TestRollbarAppender", lastFrame.get("class_name"));
+        assertEquals("com.tapstream.rollbar.TestRollbarAppender", lastFrame.get("class_name"));
         JSONObject firstException = firstTrace.getJSONObject("exception");
         assertEquals(testThrowableMsg, firstException.get("message"));
         assertEquals("java.lang.Exception", firstException.get("class"));

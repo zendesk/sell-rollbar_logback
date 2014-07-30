@@ -1,4 +1,4 @@
-package com.tapstream.rollbar.logback;
+package com.tapstream.rollbar;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;

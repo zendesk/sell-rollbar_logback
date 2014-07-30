@@ -1,4 +1,4 @@
-package com.tapstream.rollbar.logback;
+package com.tapstream.rollbar;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.MDC;
 
-import com.tapstream.rollbar.logback.RollbarFilter;
+import com.tapstream.rollbar.RollbarFilter;
 
 public class TestRollbarFilter {
 
