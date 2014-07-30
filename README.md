@@ -1,6 +1,8 @@
 Rollbar Logback
 =============
 
+[![Build Status](https://travis-ci.org/tapstream/rollbar-logback.svg?branch=master)](https://travis-ci.org/tapstream/rollbar-logback)
+
 This is a fork of the ahaid's [Rollbar Logback Appender](https://github.com/ahaid/rollbar-logback) created on
 July 27th, 2014 for use with the error aggregation service [Rollbar](https://rollbar.com/). You will need a Rollbar
 account: sign up for an account [here](https://rollbar.com/signup/).
