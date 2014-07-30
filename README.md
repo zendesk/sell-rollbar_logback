@@ -36,7 +36,7 @@ Servlet Filter
 ---------------
 
 Located at `com.tapstream.rollbar.logback.RollbarFilter` is a J2EE servlet filter that will populate the `request`
-portion of the Rollbar item from an ServletRequest. The filter will include:
+portion of the Rollbar item from a ServletRequest. The filter will include:
 
 * Remote IP address
 * User agent
