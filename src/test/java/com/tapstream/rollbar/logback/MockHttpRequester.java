@@ -1,9 +1,9 @@
-package com.ahaid.rollbar.logback;
+package com.tapstream.rollbar.logback;
 
 import java.io.IOException;
 
-import com.ahaid.rollbar.logback.HttpRequest;
-import com.ahaid.rollbar.logback.IHttpRequester;
+import com.tapstream.rollbar.logback.HttpRequest;
+import com.tapstream.rollbar.logback.IHttpRequester;
 
 public class MockHttpRequester implements IHttpRequester{
 

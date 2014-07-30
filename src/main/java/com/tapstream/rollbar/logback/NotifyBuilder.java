@@ -1,4 +1,4 @@
-package com.ahaid.rollbar.logback;
+package com.tapstream.rollbar.logback;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

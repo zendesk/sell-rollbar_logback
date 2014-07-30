@@ -6,7 +6,7 @@
         </encoder>
     </appender>
 
-    <appender name="Rollbar" class="com.ahaid.rollbar.logback.RollbarAppender">
+    <appender name="Rollbar" class="com.tapstream.rollbar.logback.RollbarAppender">
         <url>https://api.rollbar.com/api/1/item/</url>
         <apiKey>YOUR API KEY GOES HERE</apiKey>
         <environment>local</environment>

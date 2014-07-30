@@ -1,4 +1,4 @@
-package com.ahaid.rollbar.logback;
+package com.tapstream.rollbar.logback;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -19,6 +19,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.MDC;
+
+import com.tapstream.rollbar.logback.RollbarFilter;
 
 public class TestRollbarFilter {
 
