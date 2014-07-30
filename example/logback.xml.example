@@ -8,7 +8,7 @@
 
     <appender name="Rollbar" class="com.ahaid.rollbar.logback.RollbarAppender">
         <url>https://api.rollbar.com/api/1/item/</url>
-        <apiKey>1d7242f3d13e458280c5a54871a59507</apiKey>
+        <apiKey>YOUR API KEY GOES HERE</apiKey>
         <environment>local</environment>
     </appender>
 

@@ -2,6 +2,9 @@ package com.ahaid.rollbar.logback;
 
 import java.io.IOException;
 
+import com.ahaid.rollbar.logback.HttpRequest;
+import com.ahaid.rollbar.logback.IHttpRequester;
+
 public class MockHttpRequester implements IHttpRequester{
 
     private int responseCode = 200;

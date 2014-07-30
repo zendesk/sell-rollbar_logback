@@ -7,8 +7,6 @@ import java.util.Map;
 
 public class HttpRequest {
 
-    private static final int REQUEST_TIMEOUT = 5000;
-
     private final URL url;
     private final Map<String, String> requestProperties;
     private String method;

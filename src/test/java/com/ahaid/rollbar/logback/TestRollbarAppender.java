@@ -9,6 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
+import com.ahaid.rollbar.logback.HttpRequest;
+import com.ahaid.rollbar.logback.RollbarAppender;
+
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 
@@ -30,7 +33,7 @@ public class TestRollbarAppender {
         rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         loggerContext = rootLogger.getLoggerContext();
         loggerContext.reset();
-        
+                
         appender = new RollbarAppender();
         appender.setUrl(endpoint);
         appender.setApiKey(apiKey);
@@ -39,7 +42,8 @@ public class TestRollbarAppender {
         appender.setHttpRequester(httpRequester);
         appender.setContext(loggerContext);
         appender.start();
-        rootLogger.addAppender(appender);
+        assertTrue(appender.isStarted());
+        rootLogger.addAppender(appender);        
     }
     
     @After
@@ -107,7 +111,7 @@ public class TestRollbarAppender {
         JSONObject lastFrame = frames.getJSONObject(frames.length() - 1);
         assertEquals("TestRollbarAppender.java", lastFrame.get("filename"));
         assertEquals("testThrowable", lastFrame.get("method"));
-        assertEquals("com.ahaid.rollbar.logback.TestRollbarAppender", lastFrame.get("class_name"));
+        assertEquals("com.tapstream.logback.TestRollbarAppender", lastFrame.get("class_name"));
         JSONObject firstException = firstTrace.getJSONObject("exception");
         assertEquals(testThrowableMsg, firstException.get("message"));
         assertEquals("java.lang.Exception", firstException.get("class"));

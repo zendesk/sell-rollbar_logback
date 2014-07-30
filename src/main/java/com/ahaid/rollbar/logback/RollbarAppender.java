@@ -94,7 +94,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     protected void append(ILoggingEvent event) {
         String levelName = event.getLevel().toString().toLowerCase();
         String message = event.getMessage();
-        Map<String, Object> propertyMap = (Map)event.getMDCPropertyMap();
+        Map<String, String> propertyMap = event.getMDCPropertyMap();
         
         Throwable throwable = null;
         ThrowableProxy throwableProxy = (ThrowableProxy)event.getThrowableProxy();
