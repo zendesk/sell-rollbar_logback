@@ -71,7 +71,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
             addError("No environment set for the appender named [" + getName() + "].");
             error = true;
         }
-        
+                
         try {
             payloadBuilder = new NotifyBuilder(apiKey, environment);
         } catch (JSONException | UnknownHostException e) {
