@@ -17,13 +17,15 @@ public class NotifyBuilder {
 
     private final String accessToken;
     private final String environment;
+    private final String rollbarContext;
 
     private final JSONObject notifierData;
     private final JSONObject serverData;
 
-    public NotifyBuilder(String accessToken, String environment) throws JSONException, UnknownHostException {
+    public NotifyBuilder(String accessToken, String environment, String rollbarContext) throws JSONException, UnknownHostException {
         this.accessToken = accessToken;
         this.environment = environment;
+        this.rollbarContext = rollbarContext;
         this.notifierData = getNotifierData();
         this.serverData = getServerData();
     }
@@ -52,6 +54,8 @@ public class NotifyBuilder {
         data.put("platform", getValue("platform", context, "java"));
         data.put("framework", getValue("framework", context, "java"));
         data.put("language", "java");
+        if (rollbarContext != null && !rollbarContext.isEmpty())
+            data.put("context", rollbarContext);
         data.put("timestamp", System.currentTimeMillis() / 1000);
         data.put("body", getBody(message, throwable));
         data.put("request", buildRequest(context));

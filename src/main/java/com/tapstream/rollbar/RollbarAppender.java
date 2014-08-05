@@ -20,6 +20,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     private URL url;
     private String apiKey;
     private String environment;
+    private String rollbarContext;
     private boolean async = true;
     private IHttpRequester httpRequester = new HttpRequester();
     
@@ -54,6 +55,10 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     public void setAsync(boolean async){
         this.async = async;
     }
+    
+    public void setRollbarContext(String context){
+        this.rollbarContext = context;
+    }
 
     @Override
     public void start() {
@@ -71,9 +76,9 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
             addError("No environment set for the appender named [" + getName() + "].");
             error = true;
         }
-                
+   
         try {
-            payloadBuilder = new NotifyBuilder(apiKey, environment);
+            payloadBuilder = new NotifyBuilder(apiKey, environment, rollbarContext);
         } catch (JSONException | UnknownHostException e) {
             addError("Error building NotifyBuilder", e);
             error = true;
