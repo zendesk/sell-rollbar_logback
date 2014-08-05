@@ -63,11 +63,11 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
             addError("No url set for the appender named [" + getName() + "].");
             error = true;
         }
-        if (this.apiKey == null) {
+        if (this.apiKey == null || this.apiKey.isEmpty()) {
             addError("No apiKey set for the appender named [" + getName() + "].");
             error = true;
         }
-        if (this.environment == null) {
+        if (this.environment == null || this.environment.isEmpty()) {
             addError("No environment set for the appender named [" + getName() + "].");
             error = true;
         }
