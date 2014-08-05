@@ -90,6 +90,10 @@ public class NotifyBuilder {
         return custom;
     }
     
+    private String stripPrefix(String value, String prefix){
+        return value.substring(prefix.length(), value.length());
+    }
+    
     private JSONObject buildRequest(Map<String, String> ctx){
         JSONObject request = new JSONObject();
         request.put("url", ctx.get(RollbarFilter.REQUEST_URL));
@@ -101,9 +105,9 @@ public class NotifyBuilder {
         for (Entry<String, String> ctxEntry : ctx.entrySet()){
             String key = ctxEntry.getKey();
             if (key.startsWith(RollbarFilter.REQUEST_HEADER_PREFIX)){
-                headers.put(key, ctxEntry.getValue());
+                headers.put(stripPrefix(key, RollbarFilter.REQUEST_HEADER_PREFIX), ctxEntry.getValue());
             } else if (key.startsWith(RollbarFilter.REQUEST_PARAM_PREFIX)){
-                params.put(key, ctxEntry.getValue());
+                params.put(stripPrefix(key, RollbarFilter.REQUEST_PARAM_PREFIX), ctxEntry.getValue());
             }
         }
         
