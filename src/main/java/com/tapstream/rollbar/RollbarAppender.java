@@ -98,7 +98,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     @Override
     protected void append(ILoggingEvent event) {
         String levelName = event.getLevel().toString().toLowerCase();
-        String message = event.getMessage();
+        String message = event.getFormattedMessage();
         Map<String, String> propertyMap = event.getMDCPropertyMap();
         
         Throwable throwable = null;
