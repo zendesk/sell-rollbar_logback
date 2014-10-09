@@ -6,13 +6,16 @@
         </encoder>
     </appender>
 
-    <appender name="Rollbar" class="com.ahaid.rollbar.logback.RollbarAppender">
-        <url>https://api.rollbar.com/api/1/item/</url>
-        <apiKey>1d7242f3d13e458280c5a54871a59507</apiKey>
-        <environment>local</environment>
+    <appender name="ROLLBAR" class="com.tapstream.rollbar.RollbarAppender">
+        <apiKey>YOUR API KEY</apiKey>
+        <environment>dev</environment>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
     </appender>
 
     <root level="debug">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="ROLLBAR" />
     </root>
 </configuration>
