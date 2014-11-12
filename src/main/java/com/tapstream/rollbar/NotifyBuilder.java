@@ -1,7 +1,5 @@
 package com.tapstream.rollbar;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,22 +10,19 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class NotifyBuilder {
-
-    private static final String NOTIFIER_VERSION = "0.2";
-
     private final String accessToken;
     private final String environment;
 
     private final JSONObject notifierData;
     private final JSONObject serverData;
 
-    public NotifyBuilder(String accessToken, String environment) throws JSONException, UnknownHostException {
+    public NotifyBuilder(String accessToken, String environment, ServerDataProvider serverDataProvider,
+                    NotifierDataProvider notifierDataProvider) throws JSONException, RollbarException {
         this.accessToken = accessToken;
         this.environment = environment;
-        this.notifierData = getNotifierData();
-        this.serverData = getServerData();
+        this.notifierData = notifierDataProvider.getNotifierData();
+        this.serverData = serverDataProvider.getServerData();
     }
-    
 
     private String getValue(String key, Map<String, String> context, String defaultValue) {
         if (context == null) return defaultValue;
@@ -155,26 +150,6 @@ public class NotifyBuilder {
         }
 
         return body;
-    }
-
-    private JSONObject getNotifierData() throws JSONException {
-        JSONObject notifier = new JSONObject();
-        notifier.put("name", "rollbar-java");
-        notifier.put("version", NOTIFIER_VERSION);
-        return notifier;
-    }
-
-    private JSONObject getServerData() throws JSONException, UnknownHostException {
-
-        InetAddress localhost = InetAddress.getLocalHost();
-
-        String host = localhost.getHostName();
-        String ip = localhost.getHostAddress();
-
-        JSONObject notifier = new JSONObject();
-        notifier.put("host", host);
-        notifier.put("ip", ip);
-        return notifier;
     }
 
     private JSONObject createTrace(Throwable throwable) throws JSONException {

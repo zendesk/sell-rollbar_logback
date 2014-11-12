@@ -73,8 +73,8 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         }
    
         try {
-            payloadBuilder = new NotifyBuilder(apiKey, environment);
-        } catch (JSONException | UnknownHostException e) {
+            payloadBuilder = new NotifyBuilder(apiKey, environment, new ServerDataProvider(), new NotifierDataProvider());
+        } catch (JSONException | RollbarException e) {
             addError("Error building NotifyBuilder", e);
             error = true;
         }
