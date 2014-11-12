@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class NotifyBuilder {
+    private static final String PERSON_PREFIX = "person.";
     private final String accessToken;
     private final String environment;
 
@@ -58,6 +59,11 @@ public class NotifyBuilder {
         if (throwable != null && message != null) {
             customData.put("log", message);
         }
+        
+        JSONObject person = buildPerson(context);
+        if(person != null){
+            data.put("person", person);
+        }
 
         data.put("custom", customData);
         data.put("client", buildClient(context));
@@ -68,6 +74,21 @@ public class NotifyBuilder {
         return payload;
     }
     
+    private JSONObject buildPerson(Map<String, String> ctx) {
+        JSONObject person = new JSONObject();
+        for (Entry<String, String> ctxEntry : ctx.entrySet()) {
+            String key = ctxEntry.getKey();
+            if (key.startsWith(PERSON_PREFIX)) {
+                person.put(stripPrefix(key, PERSON_PREFIX), ctxEntry.getValue());
+            }
+        }
+        if (person.keySet().isEmpty()) {
+            return null;
+        } else {
+            return person;
+        }
+    }
+
     private JSONObject buildClient(Map<String, String> ctx){
         JSONObject client = new JSONObject();
         JSONObject javaScript = new JSONObject();
@@ -80,9 +101,9 @@ public class NotifyBuilder {
         JSONObject custom = new JSONObject();
         for (Entry<String, String> ctxEntry : ctx.entrySet()){
             String key = ctxEntry.getKey();
-            if (key.startsWith(RollbarFilter.REQUEST_PREFIX))
-                continue;
-            custom.put(key, ctxEntry.getValue());
+            if (!key.startsWith(RollbarFilter.REQUEST_PREFIX) && !key.startsWith(PERSON_PREFIX)){
+                custom.put(key, ctxEntry.getValue());
+            }
         }
         return custom;
     }

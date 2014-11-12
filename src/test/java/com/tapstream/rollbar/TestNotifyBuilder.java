@@ -2,8 +2,10 @@ package com.tapstream.rollbar;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,8 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import static org.mockito.Mockito.*;
 
 public class TestNotifyBuilder {
     @Mock
@@ -51,5 +51,32 @@ public class TestNotifyBuilder {
         JSONObject notifier = data.getJSONObject("notifier");
         assertEquals("abc", notifier.get("name"));
         assertEquals("12.0", notifier.get("version"));
+    }
+    
+    @Test
+    public void personFieldPresent() throws Exception{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        Map<String,String> ctx = new HashMap<>();
+        ctx.put("person.id", "12345");
+        ctx.put("person.username", "john");
+        ctx.put("person.email", "john@example.org");
+        
+        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        
+        assertEquals(true, result.getJSONObject("data").has("person"));
+        JSONObject person = result.getJSONObject("data").getJSONObject("person");
+        assertEquals("12345", person.get("id"));
+        assertEquals("john", person.get("username"));
+        assertEquals("john@example.org", person.get("email"));
+    }
+    
+    @Test
+    public void personFieldOmitted() throws JSONException, RollbarException{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        Map<String,String> ctx = new HashMap<>();
+        
+        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        
+        assertEquals(false, result.getJSONObject("data").has("person"));
     }
 }
