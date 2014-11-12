@@ -120,7 +120,26 @@ public class TestRollbarAppender {
         assertEquals(testMsg, custom.get("log"));
     }
     
-    
-    
+    @Test
+    public void contextContainsRootLoggerName() {
+        rootLogger.info("test message");
 
+        HttpRequest request = httpRequester.getRequest();
+        JSONObject root = new JSONObject(new String(request.getBody()));
+
+        assertEquals(root.getJSONObject("data").get("context"), Logger.ROOT_LOGGER_NAME);
+    }
+    
+    @Test
+    public void contextContainsSubLoggerName() {
+        Logger subLogger = (Logger) LoggerFactory.getLogger("some.logger");
+        subLogger.addAppender(appender);
+
+        subLogger.warn("test message2");
+
+        HttpRequest request = httpRequester.getRequest();
+        JSONObject root = new JSONObject(new String(request.getBody()));
+
+        assertEquals(root.getJSONObject("data").get("context"), "some.logger");
+    }
 }

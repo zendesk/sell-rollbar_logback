@@ -17,15 +17,13 @@ public class NotifyBuilder {
 
     private final String accessToken;
     private final String environment;
-    private final String rollbarContext;
 
     private final JSONObject notifierData;
     private final JSONObject serverData;
 
-    public NotifyBuilder(String accessToken, String environment, String rollbarContext) throws JSONException, UnknownHostException {
+    public NotifyBuilder(String accessToken, String environment) throws JSONException, UnknownHostException {
         this.accessToken = accessToken;
         this.environment = environment;
-        this.rollbarContext = rollbarContext;
         this.notifierData = getNotifierData();
         this.serverData = getServerData();
     }
@@ -38,7 +36,7 @@ public class NotifyBuilder {
         return value.toString();
     }
 
-    public JSONObject build(String level, String message, Throwable throwable, Map<String, String> context) throws JSONException {
+    public JSONObject build(String level, String message, Throwable throwable, Map<String, String> context, String loggerName) throws JSONException {
 
         JSONObject payload = new JSONObject();
 
@@ -54,8 +52,8 @@ public class NotifyBuilder {
         data.put("platform", getValue("platform", context, "java"));
         data.put("framework", getValue("framework", context, "java"));
         data.put("language", "java");
-        if (rollbarContext != null && !rollbarContext.isEmpty())
-            data.put("context", rollbarContext);
+        if (loggerName != null && !loggerName.isEmpty())
+            data.put("context", loggerName);
         data.put("timestamp", System.currentTimeMillis() / 1000);
         data.put("body", getBody(message, throwable));
         data.put("request", buildRequest(context));

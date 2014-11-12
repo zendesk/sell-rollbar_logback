@@ -20,7 +20,6 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     private URL url;
     private String apiKey;
     private String environment;
-    private String rollbarContext;
     private boolean async = true;
     private IHttpRequester httpRequester = new HttpRequester();
     
@@ -56,10 +55,6 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         this.async = async;
     }
     
-    public void setRollbarContext(String context){
-        this.rollbarContext = context;
-    }
-
     @Override
     public void start() {
         boolean error = false;
@@ -78,7 +73,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         }
    
         try {
-            payloadBuilder = new NotifyBuilder(apiKey, environment, rollbarContext);
+            payloadBuilder = new NotifyBuilder(apiKey, environment);
         } catch (JSONException | UnknownHostException e) {
             addError("Error building NotifyBuilder", e);
             error = true;
@@ -106,7 +101,8 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         if (throwableProxy != null)
             throwable = throwableProxy.getThrowable();
         
-        final JSONObject payload = payloadBuilder.build(levelName, message, throwable, propertyMap);
+        String loggerName = event.getLoggerName();
+        final JSONObject payload = payloadBuilder.build(levelName, message, throwable, propertyMap, loggerName);
         final HttpRequest request = new HttpRequest(url, "POST");
         request.setHeader("Content-Type", "application/json");
         request.setHeader("Accept", "application/json");
@@ -122,8 +118,6 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         } else {
             sendRequest(request);
         }
-        
-        
     }
     
     private void sendRequest(HttpRequest request){
