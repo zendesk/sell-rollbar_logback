@@ -132,18 +132,10 @@ public class NotifyBuilder {
         request.put("headers", headers);
         
         String method = ctx.get(RollbarFilter.REQUEST_METHOD);
-        if (method != null){
+        if (method != null) {
             request.put("method", method);
-            switch (method){
-            case "GET":
-                request.put("GET", params);
-                break;
-            case "POST":
-                request.put("POST", params);
-                break;
-            }
+            request.put(method, params);
         }
-        
         
         request.put("user_ip", ctx.get(RollbarFilter.REQUEST_REMOTE_ADDR));
         return request;

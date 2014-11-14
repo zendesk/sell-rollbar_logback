@@ -3,7 +3,6 @@ package com.tapstream.rollbar;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.json.JSONException;
