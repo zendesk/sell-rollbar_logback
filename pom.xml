@@ -6,7 +6,7 @@
 	<groupId>com.tapstream</groupId>
 	<artifactId>rollbar-logback</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1.1</version>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>A Rollbar logback appender that includes out of the box support for servlets</description>
@@ -118,8 +118,8 @@
 	<build>
 		<resources>
 			<resource>
-		        <directory>src/main/resources</directory>
-		        <filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
 			</resource>
 		</resources>
 		<plugins>
