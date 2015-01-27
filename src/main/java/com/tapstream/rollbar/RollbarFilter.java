@@ -1,5 +1,9 @@
 package com.tapstream.rollbar;
 
+import com.tapstream.rollbar.sanitize.HeaderSanitizer;
+import com.tapstream.rollbar.sanitize.NoOpHeaderSanitizer;
+import com.tapstream.rollbar.sanitize.SanitizedHttpRequest;
+
 import java.io.IOException;
 import java.util.Enumeration;
 
@@ -24,7 +28,20 @@ public class RollbarFilter implements Filter {
     public static final String REQUEST_USER_AGENT = REQUEST_PREFIX + "user_agent";
     public static final String REQUEST_HEADER_PREFIX = REQUEST_PREFIX + "header.";
     public static final String REQUEST_PARAM_PREFIX = REQUEST_PREFIX + "param.";
+    
+    private final HeaderSanitizer headerSanitizer;
 
+    public RollbarFilter() {
+        this.headerSanitizer = new NoOpHeaderSanitizer();
+    }
+
+    public RollbarFilter(HeaderSanitizer headerSanitizer) {
+        if (headerSanitizer == null) {
+            throw new IllegalArgumentException("HeaderSanitizer must be provided");
+        }
+        this.headerSanitizer = headerSanitizer;
+    }
+    
     @Override
     public void init(FilterConfig config) throws ServletException {}
 
@@ -45,27 +62,31 @@ public class RollbarFilter implements Filter {
         
         MDC.put(REQUEST_REMOTE_ADDR, request.getRemoteAddr());
         
-        if (request instanceof HttpServletRequest){
+        if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
-            StringBuffer requestUrl = httpRequest.getRequestURL();
-            if (requestUrl != null){
-                MDC.put(REQUEST_URL, requestUrl.toString());
-            }
-            MDC.put(REQUEST_QS, httpRequest.getQueryString());
-            MDC.put(REQUEST_METHOD, httpRequest.getMethod());
-            MDC.put(REQUEST_USER_AGENT, httpRequest.getHeader("User-Agent"));
-            
-            for (Enumeration<String> headerNames = httpRequest.getHeaderNames(); headerNames.hasMoreElements(); ){
-                String headerName = headerNames.nextElement();
-                String headerValue = httpRequest.getHeader(headerName);
-                MDC.put(REQUEST_HEADER_PREFIX + headerName, headerValue);
-            }
-            
-            for (Enumeration<String> paramNames = httpRequest.getParameterNames(); paramNames.hasMoreElements(); ){
-                String paramName = paramNames.nextElement();
-                String paramValue = httpRequest.getParameter(paramName);
-                MDC.put(REQUEST_PARAM_PREFIX + paramName, paramValue);
-            }
+            insertIntoMDCHttp(new SanitizedHttpRequest(httpRequest, headerSanitizer));
+        }
+    }
+
+    private void insertIntoMDCHttp(HttpServletRequest httpRequest) {
+        StringBuffer requestUrl = httpRequest.getRequestURL();
+        if (requestUrl != null){
+            MDC.put(REQUEST_URL, requestUrl.toString());
+        }
+        MDC.put(REQUEST_QS, httpRequest.getQueryString());
+        MDC.put(REQUEST_METHOD, httpRequest.getMethod());
+        MDC.put(REQUEST_USER_AGENT, httpRequest.getHeader("User-Agent"));
+        
+        for (Enumeration<String> headerNames = httpRequest.getHeaderNames(); headerNames.hasMoreElements(); ){
+            String headerName = headerNames.nextElement();
+            String headerValue = httpRequest.getHeader(headerName);
+            MDC.put(REQUEST_HEADER_PREFIX + headerName, headerValue);
+        }
+        
+        for (Enumeration<String> paramNames = httpRequest.getParameterNames(); paramNames.hasMoreElements(); ){
+            String paramName = paramNames.nextElement();
+            String paramValue = httpRequest.getParameter(paramName);
+            MDC.put(REQUEST_PARAM_PREFIX + paramName, paramValue);
         }
     }
     
