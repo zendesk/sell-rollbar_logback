@@ -1,40 +1,62 @@
 package com.tapstream.rollbar;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-
-import javax.servlet.FilterConfig;
-import javax.servlet.http.HttpServletRequest;
+import com.tapstream.rollbar.sanitize.HeaderSanitizer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.MDC;
 
+import javax.servlet.FilterConfig;
+import javax.servlet.http.HttpServletRequest;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+
+@RunWith(MockitoJUnitRunner.class)
 public class TestRollbarFilter {
     
-    RollbarFilter filter;
+    @Mock
+    private HttpServletRequest request;
+    @Mock
+    private FilterConfig filterConfig;
     
     @Before
-    public void setup() throws Exception {
-        filter = new RollbarFilter();
-        filter.init(mock(FilterConfig.class));
-    }
-    
     @After
-    public void teardown() throws Exception {
-        filter.destroy();
+    public void before() {
+        MDC.clear();
     }
     
     @Test
+    public void initSucceeds() throws Exception {
+        new RollbarFilter().init(filterConfig);
+        
+        // expecting no exception
+    }
+    @Test
+    public void destroySucceeds() {
+        new RollbarFilter().destroy();
+        
+        // expecting no exception 
+    }
+    @Test
     public void testFilter() throws Exception {
-        HttpServletRequest request = mock(HttpServletRequest.class);
+        RollbarFilter filter = new RollbarFilter();
         
         final String remoteAddr = "1.2.3.4";
         final String qs = "?qs=test";
@@ -45,8 +67,10 @@ public class TestRollbarFilter {
         final String paramName = "paramName";
         final String paramValue = "paramValue";
         
-        Hashtable<String, String> headers = new Hashtable<>();
-        headers.put(headerName, headerValue);
+        Hashtable<String, String> headers = new Hashtable<String, String>() {{
+            put(headerName, headerValue);
+            put("User-Agent", ua);
+        }};
         
         Hashtable<String, String> params = new Hashtable<>();
         params.put(paramName, paramValue);
@@ -60,9 +84,11 @@ public class TestRollbarFilter {
         when(request.getParameterNames()).thenReturn(params.keys());
         when(request.getParameter(paramName)).thenReturn(paramValue);
 
-        filter.insertIntoMDC(request);
+        Map<String, String> details = filter.collectDetails(request);
+        filter.putToMDC(details);
         
         Map<String, String> actual = MDC.getCopyOfContextMap();
+        @SuppressWarnings("serial")
         Map<String, String> expected = new HashMap<String, String>(){{
             put(RollbarFilter.REQUEST_REMOTE_ADDR, remoteAddr);
             put(RollbarFilter.REQUEST_QS, qs);
@@ -71,12 +97,50 @@ public class TestRollbarFilter {
         }};
         
         expected.put(RollbarFilter.REQUEST_HEADER_PREFIX + headerName, headerValue);
+        expected.put(RollbarFilter.REQUEST_HEADER_PREFIX + "User-Agent", ua);
         expected.put(RollbarFilter.REQUEST_PARAM_PREFIX + paramName, paramValue);
         
         assertThat(actual, is(equalTo(expected)));
         
-        filter.clearMDC();
-        assertThat(MDC.getCopyOfContextMap(), is(nullValue()));
+        filter.clearMDC(details);
+        assertThat(MDC.getCopyOfContextMap().keySet(), is(empty()));
+    }
+    
+    @Test
+    public void headerValuesAreSanitized() {
+        //given
+        String[] headerNames = new String[] {"secureHeader","otherHeader", "secureHeaderToRemove"};
+        when(request.getHeaderNames()).thenReturn(Collections.enumeration(Arrays.asList(headerNames)));
+        when(request.getHeader("secureHeader")).thenReturn("secret");
+        when(request.getHeader("otherHeader")).thenReturn("otherValue");
+        when(request.getHeader("secureHeaderToRemove")).thenReturn("secret2");
+        when(request.getParameterNames()).thenReturn(Collections.enumeration(Collections.<String>emptyList()));
+        
+        HeaderSanitizer headerSanitizer = new HeaderSanitizer() {
+            @Override
+            public String sanitize(String headerName, String headerValue) {
+                if(headerName.equals("secureHeader")) {
+                    return "XXX";
+                }else if(headerName.equals("otherHeader")) {
+                    return headerValue;
+                }else if(headerName.equals("secureHeaderToRemove")) {
+                    return null;
+                }else {
+                    throw new IllegalArgumentException();
+                }
+            }
+        };
+        
+        // when
+        RollbarFilter filter = new RollbarFilter(headerSanitizer);
+        Map<String, String> details = filter.collectDetails(request);
+        filter.putToMDC(details);
+        
+        // then
+        Map<String, String> actual = MDC.getCopyOfContextMap();
+        assertThat(actual.get("request.header.secureHeader"), is(equalTo("XXX")));
+        assertThat(actual.get("request.header.otherHeader"), is(equalTo("otherValue")));
+        assertFalse(actual.containsKey("request.header.secureHeaderToRemove"));
     }
     
 }
