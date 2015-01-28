@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.when;
@@ -84,7 +84,8 @@ public class TestRollbarFilter {
         when(request.getParameterNames()).thenReturn(params.keys());
         when(request.getParameter(paramName)).thenReturn(paramValue);
 
-        filter.insertIntoMDC(request);
+        Map<String, String> details = filter.collectDetails(request);
+        filter.putToMDC(details);
         
         Map<String, String> actual = MDC.getCopyOfContextMap();
         @SuppressWarnings("serial")
@@ -101,8 +102,8 @@ public class TestRollbarFilter {
         
         assertThat(actual, is(equalTo(expected)));
         
-        filter.clearMDC();
-        assertThat(MDC.getCopyOfContextMap(), is(nullValue()));
+        filter.clearMDC(details);
+        assertThat(MDC.getCopyOfContextMap().keySet(), is(empty()));
     }
     
     @Test
@@ -132,7 +133,8 @@ public class TestRollbarFilter {
         
         // when
         RollbarFilter filter = new RollbarFilter(headerSanitizer);
-        filter.insertIntoMDC(request);
+        Map<String, String> details = filter.collectDetails(request);
+        filter.putToMDC(details);
         
         // then
         Map<String, String> actual = MDC.getCopyOfContextMap();

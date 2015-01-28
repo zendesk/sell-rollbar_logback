@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 
@@ -47,51 +50,60 @@ public class RollbarFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-
-        insertIntoMDC(servletRequest);
-
+        Map<String, String> details = collectDetails(servletRequest);
+        putToMDC(details);
         try {
             filterChain.doFilter(servletRequest, servletResponse);
         } finally {
-            clearMDC();
+            clearMDC(details);
         }
 
     }
-    
-    void insertIntoMDC(ServletRequest request){
-        
-        MDC.put(REQUEST_REMOTE_ADDR, request.getRemoteAddr());
+
+    Map<String, String> collectDetails(ServletRequest request){
+        Map<String, String> details = new HashMap<>();
+        details.put(REQUEST_REMOTE_ADDR, request.getRemoteAddr());
         
         if (request instanceof HttpServletRequest) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
-            insertIntoMDCHttp(new SanitizedHttpRequest(httpRequest, headerSanitizer));
+            collectHttpDetails(new SanitizedHttpRequest(httpRequest, headerSanitizer), details);
         }
+        
+        return details;
     }
 
-    private void insertIntoMDCHttp(HttpServletRequest httpRequest) {
+    private void collectHttpDetails(HttpServletRequest httpRequest, Map<String, String> details) {
         String requestUrl = Objects.toString(httpRequest.getRequestURL(), null);
         if (requestUrl != null) {
-            MDC.put(REQUEST_URL, requestUrl);
+            details.put(REQUEST_URL, requestUrl);
         }
-        MDC.put(REQUEST_QS, httpRequest.getQueryString());
-        MDC.put(REQUEST_METHOD, httpRequest.getMethod());
-        MDC.put(REQUEST_USER_AGENT, httpRequest.getHeader("User-Agent"));
+        details.put(REQUEST_QS, httpRequest.getQueryString());
+        details.put(REQUEST_METHOD, httpRequest.getMethod());
+        details.put(REQUEST_USER_AGENT, httpRequest.getHeader("User-Agent"));
         
         for (Enumeration<String> headerNames = httpRequest.getHeaderNames(); headerNames.hasMoreElements(); ){
             String headerName = headerNames.nextElement();
             String headerValue = httpRequest.getHeader(headerName);
-            MDC.put(REQUEST_HEADER_PREFIX + headerName, headerValue);
+            details.put(REQUEST_HEADER_PREFIX + headerName, headerValue);
         }
         
         for (Enumeration<String> paramNames = httpRequest.getParameterNames(); paramNames.hasMoreElements(); ){
             String paramName = paramNames.nextElement();
             String paramValue = httpRequest.getParameter(paramName);
-            MDC.put(REQUEST_PARAM_PREFIX + paramName, paramValue);
+            details.put(REQUEST_PARAM_PREFIX + paramName, paramValue);
         }
     }
     
-    void clearMDC(){
-        MDC.clear();
+    void putToMDC(Map<String, String> details) {
+        for(Entry<String,String> entry : details.entrySet()) {
+            MDC.put(entry.getKey(), entry.getValue());
+        }
+    }
+    
+    void clearMDC(Map<String, String> details){
+        for(String key : details.keySet()) {
+            MDC.remove(key);
+        }
     }
 
     @Override
