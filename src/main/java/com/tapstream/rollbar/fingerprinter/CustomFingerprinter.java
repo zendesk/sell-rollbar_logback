@@ -1,9 +1,9 @@
 package com.tapstream.rollbar.fingerprinter;
 
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
@@ -82,6 +82,10 @@ public class CustomFingerprinter implements Fingerprinter {
     }
 
     protected MessageDigest getDigest() {
-        return DigestUtils.getMd5Digest();
+        try {
+            return MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Failed to initialize MD5", e);
+        }
     }
 }
