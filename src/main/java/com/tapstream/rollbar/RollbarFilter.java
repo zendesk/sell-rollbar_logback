@@ -4,8 +4,7 @@ import com.tapstream.rollbar.sanitize.HeaderSanitizer;
 import com.tapstream.rollbar.sanitize.NoOpHeaderSanitizer;
 import com.tapstream.rollbar.sanitize.SanitizedHttpRequest;
 
-import java.io.IOException;
-import java.util.Enumeration;
+import org.slf4j.MDC;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,7 +14,9 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.slf4j.MDC;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Objects;
 
 
 public class RollbarFilter implements Filter {
@@ -32,13 +33,12 @@ public class RollbarFilter implements Filter {
     private final HeaderSanitizer headerSanitizer;
 
     public RollbarFilter() {
-        this.headerSanitizer = new NoOpHeaderSanitizer();
+        this(new NoOpHeaderSanitizer());
     }
 
     public RollbarFilter(HeaderSanitizer headerSanitizer) {
-        if (headerSanitizer == null) {
-            throw new IllegalArgumentException("HeaderSanitizer must be provided");
-        }
+        Objects.requireNonNull(headerSanitizer);
+        
         this.headerSanitizer = headerSanitizer;
     }
     
@@ -69,9 +69,9 @@ public class RollbarFilter implements Filter {
     }
 
     private void insertIntoMDCHttp(HttpServletRequest httpRequest) {
-        StringBuffer requestUrl = httpRequest.getRequestURL();
-        if (requestUrl != null){
-            MDC.put(REQUEST_URL, requestUrl.toString());
+        String requestUrl = Objects.toString(httpRequest.getRequestURL(), null);
+        if (requestUrl != null) {
+            MDC.put(REQUEST_URL, requestUrl);
         }
         MDC.put(REQUEST_QS, httpRequest.getQueryString());
         MDC.put(REQUEST_METHOD, httpRequest.getMethod());

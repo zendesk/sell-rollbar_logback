@@ -11,10 +11,10 @@ import java.util.Map;
 
 
 /**
- * Provides HttpServletRequest with sensitive information removed or obfuscated.
+ * Provides {@link HttpServletRequest} with sensitive information removed or obfuscated.
  */
 public class SanitizedHttpRequest extends HttpServletRequestWrapper {
-    private HeaderSanitizer headerSanitizer;
+    private final HeaderSanitizer headerSanitizer;
 
     private final Map<String, String> sanitizedHeaders;
 
@@ -24,7 +24,7 @@ public class SanitizedHttpRequest extends HttpServletRequestWrapper {
         super(request);
         this.originalRequest = request;
         this.headerSanitizer = headerSanitizer;
-        sanitizedHeaders = sanitizeHeaders();
+        this.sanitizedHeaders = sanitizeHeaders();
     }
 
     @Override
@@ -37,8 +37,8 @@ public class SanitizedHttpRequest extends HttpServletRequestWrapper {
         return Collections.enumeration(sanitizedHeaders.keySet());
     }
 
-    private HashMap<String, String> sanitizeHeaders() {
-        HashMap<String, String> newHeaders = new HashMap<String, String>();
+    private Map<String, String> sanitizeHeaders() {
+        Map<String, String> newHeaders = new HashMap<String, String>();
         for (Enumeration<String> headerNames = originalRequest.getHeaderNames(); headerNames.hasMoreElements();) {
             String name = headerNames.nextElement();
             sanitizeHeader(name, originalRequest.getHeader(name), newHeaders);
@@ -46,7 +46,7 @@ public class SanitizedHttpRequest extends HttpServletRequestWrapper {
         return newHeaders;
     }
 
-    private void sanitizeHeader(String name, String originalValue, HashMap<String, String> newHeaders) {
+    private void sanitizeHeader(String name, String originalValue, Map<String, String> newHeaders) {
         String value = headerSanitizer.sanitize(name, originalValue);
         if (value != null) {
             newHeaders.put(name, value);

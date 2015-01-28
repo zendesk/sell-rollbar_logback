@@ -22,11 +22,10 @@ import org.slf4j.MDC;
 import javax.servlet.FilterConfig;
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -68,9 +67,10 @@ public class TestRollbarFilter {
         final String paramName = "paramName";
         final String paramValue = "paramValue";
         
-        Hashtable<String, String> headers = new Hashtable<>();
-        headers.put(headerName, headerValue);
-        headers.put("User-Agent", ua);
+        Hashtable<String, String> headers = new Hashtable<String, String>() {{
+            put(headerName, headerValue);
+            put("User-Agent", ua);
+        }};
         
         Hashtable<String, String> params = new Hashtable<>();
         params.put(paramName, paramValue);
@@ -108,11 +108,8 @@ public class TestRollbarFilter {
     @Test
     public void headerValuesAreSanitized() {
         //given
-        List<String> headerNames = new ArrayList<String>();
-        headerNames.add("secureHeader");
-        headerNames.add("otherHeader");
-        headerNames.add("secureHeaderToRemove");
-        when(request.getHeaderNames()).thenReturn(Collections.enumeration(headerNames));
+        String[] headerNames = new String[] {"secureHeader","otherHeader", "secureHeaderToRemove"};
+        when(request.getHeaderNames()).thenReturn(Collections.enumeration(Arrays.asList(headerNames)));
         when(request.getHeader("secureHeader")).thenReturn("secret");
         when(request.getHeader("otherHeader")).thenReturn("otherValue");
         when(request.getHeader("secureHeaderToRemove")).thenReturn("secret2");
@@ -139,11 +136,9 @@ public class TestRollbarFilter {
         
         // then
         Map<String, String> actual = MDC.getCopyOfContextMap();
-        System.out.println(actual.toString());
         assertThat(actual.get("request.header.secureHeader"), is(equalTo("XXX")));
         assertThat(actual.get("request.header.otherHeader"), is(equalTo("otherValue")));
         assertFalse(actual.containsKey("request.header.secureHeaderToRemove"));
-        
     }
     
 }
