@@ -3,9 +3,10 @@ package com.tapstream.rollbar;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
+import com.tapstream.rollbar.fingerprinter.Fingerprinter;
+
 import java.util.HashMap;
 import java.util.Map;
-
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -118,5 +119,29 @@ public class TestNotifyBuilder {
         JSONObject req = result.getJSONObject("data").getJSONObject("request");
         assertEquals("DELETE", req.get("method"));
         assertEquals("param1val", req.getJSONObject("DELETE").get("param1"));
+    }
+    
+    @Test
+    public void setsFingerprint() throws Exception{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, new Fingerprinter() {
+            @Override
+            public String fingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName) {
+                return "aaa";
+            }
+        });
+        
+        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        
+        assertNotNull(result.getJSONObject("data").get("fingerprint"));
+    }
+    
+    @Test
+    public void doesNotSetFingerprintWhenFingerprinterMissing() throws Exception{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
+        
+        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        
+        assertFalse(result.getJSONObject("data").has("fingerprint"));
+        
     }
 }

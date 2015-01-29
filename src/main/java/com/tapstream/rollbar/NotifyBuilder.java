@@ -47,10 +47,11 @@ public class NotifyBuilder {
         // access token
         payload.put("access_token", this.accessToken);
         
-        maybeAddFingerprint(message, throwable, context, loggerName, payload);
 
         // data
         JSONObject data = new JSONObject();
+        
+        maybeAddFingerprint(message, throwable, context, loggerName, data);
 
         // general values
         data.put("environment", this.environment);
