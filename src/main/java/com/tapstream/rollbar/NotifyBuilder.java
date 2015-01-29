@@ -1,5 +1,7 @@
 package com.tapstream.rollbar;
 
+import com.tapstream.rollbar.fingerprinter.Fingerprinter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,19 +18,25 @@ public class NotifyBuilder {
 
     private final JSONObject notifierData;
     private final JSONObject serverData;
+    private final Fingerprinter fingerprinter;
 
     public NotifyBuilder(String accessToken, String environment, ServerDataProvider serverDataProvider,
-                    NotifierDataProvider notifierDataProvider) throws JSONException, RollbarException {
+                    NotifierDataProvider notifierDataProvider, Fingerprinter fingerprinter) throws JSONException, RollbarException {
         this.accessToken = accessToken;
         this.environment = environment;
         this.notifierData = notifierDataProvider.getNotifierData();
         this.serverData = serverDataProvider.getServerData();
+        this.fingerprinter = fingerprinter;
     }
 
     private String getValue(String key, Map<String, String> context, String defaultValue) {
-        if (context == null) return defaultValue;
+        if (context == null) {
+            return defaultValue;
+        }
         Object value = context.get(key);
-        if (value == null) return defaultValue;
+        if (value == null) {
+            return defaultValue;
+        }
         return value.toString();
     }
 
@@ -41,6 +49,8 @@ public class NotifyBuilder {
 
         // data
         JSONObject data = new JSONObject();
+        
+        maybeAddFingerprint(message, throwable, context, loggerName, data);
 
         // general values
         data.put("environment", this.environment);
@@ -48,8 +58,9 @@ public class NotifyBuilder {
         data.put("platform", getValue("platform", context, "java"));
         data.put("framework", getValue("framework", context, "java"));
         data.put("language", "java");
-        if (loggerName != null && !loggerName.isEmpty())
+        if (loggerName != null && !loggerName.isEmpty()) {
             data.put("context", loggerName);
+        }
         data.put("timestamp", System.currentTimeMillis() / 1000);
         data.put("body", getBody(message, throwable));
         data.put("request", buildRequest(context));
@@ -72,6 +83,17 @@ public class NotifyBuilder {
         payload.put("data", data);
 
         return payload;
+    }
+
+    private void maybeAddFingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName, JSONObject payload) {
+        if(fingerprinter == null) {
+            return;
+        }
+        
+        String fingerprint = fingerprinter.fingerprint(message, throwable, context, loggerName);
+        if(fingerprint != null) {
+            payload.put("fingerprint", fingerprint);
+        }
     }
     
     private JSONObject buildPerson(Map<String, String> ctx) {
@@ -152,10 +174,14 @@ public class NotifyBuilder {
                 traces.add(0, createTrace(throwable));
                 throwable = throwable.getCause();
             } while (throwable != null);
+            
+            // TODO consider in the future: if description is present it becomes the label for rollbar item instead of exception's message
+            // traces.get(0).getJSONObject("exception").put("description", "Something went wrong while trying to save the user object");
 
             body.put("trace_chain", new JSONArray(traces));
         }
 
+        // note - can't send both message and exception, rollbar does not accept it
         if (original == null && message != null) {
             JSONObject messageBody = new JSONObject();
             messageBody.put("body", message);

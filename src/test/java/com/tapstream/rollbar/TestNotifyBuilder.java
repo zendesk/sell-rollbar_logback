@@ -3,9 +3,10 @@ package com.tapstream.rollbar;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
+import com.tapstream.rollbar.fingerprinter.Fingerprinter;
+
 import java.util.HashMap;
 import java.util.Map;
-
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,13 +24,14 @@ public class TestNotifyBuilder {
     @Before
     public void test() throws Throwable {
         MockitoAnnotations.initMocks(this);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
     }
 
     @Test
     public void serverDataIsIncluded() throws JSONException, RollbarException {
         when(serverDataProvider.getServerData()).thenReturn(new JSONObject("{host:abc, ip:10.20.30.40}"));
 
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         JSONObject result = builder.build("lvl", "msg", null, new HashMap<String, String>(), "logger.name");
 
         JSONObject data = result.getJSONObject("data");
@@ -43,7 +45,7 @@ public class TestNotifyBuilder {
     public void notifierDataIsIncluded() throws JSONException, RollbarException {
         when(notifierDataProvider.getNotifierData()).thenReturn(new JSONObject("{name:abc, version:'12.0'}"));
 
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         JSONObject result = builder.build("lvl", "msg", null, new HashMap<String, String>(), "logger.name");
 
         JSONObject data = result.getJSONObject("data");
@@ -55,7 +57,7 @@ public class TestNotifyBuilder {
 
     @Test
     public void personFieldPresent() throws Exception {
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
         ctx.put("person.id", "12345");
         ctx.put("person.username", "john");
@@ -72,7 +74,7 @@ public class TestNotifyBuilder {
 
     @Test
     public void personFieldOmitted() throws JSONException, RollbarException {
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
 
         JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
@@ -82,7 +84,7 @@ public class TestNotifyBuilder {
 
     @Test
     public void putMethodSupported() throws JSONException, RollbarException {
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "PUT");
         ctx.put("request.param.param1", "param1val");
@@ -95,7 +97,7 @@ public class TestNotifyBuilder {
     
     @Test
     public void patchMethodSupported() throws JSONException, RollbarException {
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "PATCH");
         ctx.put("request.param.param1", "param1val");
@@ -108,7 +110,7 @@ public class TestNotifyBuilder {
     
     @Test
     public void deleteMethodSupported() throws JSONException, RollbarException {
-        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider);
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "DELETE");
         ctx.put("request.param.param1", "param1val");
@@ -117,5 +119,29 @@ public class TestNotifyBuilder {
         JSONObject req = result.getJSONObject("data").getJSONObject("request");
         assertEquals("DELETE", req.get("method"));
         assertEquals("param1val", req.getJSONObject("DELETE").get("param1"));
+    }
+    
+    @Test
+    public void setsFingerprint() throws Exception{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, new Fingerprinter() {
+            @Override
+            public String fingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName) {
+                return "aaa";
+            }
+        });
+        
+        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        
+        assertNotNull(result.getJSONObject("data").get("fingerprint"));
+    }
+    
+    @Test
+    public void doesNotSetFingerprintWhenFingerprinterMissing() throws Exception{
+        NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
+        
+        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        
+        assertFalse(result.getJSONObject("data").has("fingerprint"));
+        
     }
 }

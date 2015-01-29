@@ -1,5 +1,8 @@
 package com.tapstream.rollbar;
 
+import com.tapstream.rollbar.fingerprinter.DefaultFingerprinter;
+import com.tapstream.rollbar.fingerprinter.Fingerprinter;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,6 +24,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
     private String environment;
     private boolean async = true;
     private IHttpRequester httpRequester = new HttpRequester();
+    private Fingerprinter fingerprinter = new DefaultFingerprinter();
     
     public RollbarAppender(){
         try {
@@ -72,7 +76,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         }
    
         try {
-            payloadBuilder = new NotifyBuilder(apiKey, environment, new ServerDataProvider(), new NotifierDataProvider());
+            payloadBuilder = new NotifyBuilder(apiKey, environment, new ServerDataProvider(), new NotifierDataProvider(), fingerprinter);
         } catch (JSONException | RollbarException e) {
             addError("Error building NotifyBuilder", e);
             error = true;
@@ -97,8 +101,9 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         
         Throwable throwable = null;
         ThrowableProxy throwableProxy = (ThrowableProxy)event.getThrowableProxy();
-        if (throwableProxy != null)
+        if (throwableProxy != null) {
             throwable = throwableProxy.getThrowable();
+        }
         
         String loggerName = event.getLoggerName();
         final JSONObject payload = payloadBuilder.build(levelName, message, throwable, propertyMap, loggerName);
@@ -133,4 +138,7 @@ public class RollbarAppender extends UnsynchronizedAppenderBase<ILoggingEvent>{
         }
     }
 
+    public void setFingerprinter(Fingerprinter fingerprinter) {
+        this.fingerprinter = fingerprinter;
+    }
 }
