@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 /**
- * Calculates fingerprint similar to how Rollbar does that, but supports HasFingerprint interface.
+ * Calculates fingerprint similar to how Rollbar does that, but supports {@link HasFingerprint} interface.
  * Fingerprint is calculated based on:
  * <ol>
  * <li>when throwable present</li>
@@ -29,13 +29,15 @@ public class CustomFingerprinter implements Fingerprinter {
 
     @Override
     public String fingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName) {
+        if(message == null && throwable == null) {
+            return null;
+        }
+        
         MessageDigest digest = getDigest();
         if (throwable != null) {
             fingerprintThrowable(throwable, digest);
         } else if (message != null) {
             fingerprintMessage(message, digest);
-        } else {
-            return null;
         }
         
         return new String(Hex.encodeHex(digest.digest()));

@@ -18,7 +18,7 @@ public class NotifyBuilder {
 
     private final JSONObject notifierData;
     private final JSONObject serverData;
-    private Fingerprinter fingerprinter;
+    private final Fingerprinter fingerprinter;
 
     public NotifyBuilder(String accessToken, String environment, ServerDataProvider serverDataProvider,
                     NotifierDataProvider notifierDataProvider, Fingerprinter fingerprinter) throws JSONException, RollbarException {
@@ -46,7 +46,6 @@ public class NotifyBuilder {
 
         // access token
         payload.put("access_token", this.accessToken);
-        
 
         // data
         JSONObject data = new JSONObject();
@@ -87,11 +86,13 @@ public class NotifyBuilder {
     }
 
     private void maybeAddFingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName, JSONObject payload) {
-        if(fingerprinter != null) {
-            String fingerprint = fingerprinter.fingerprint(message, throwable, context, loggerName);
-            if(fingerprint != null) {
-                payload.put("fingerprint", fingerprint);
-            }
+        if(fingerprinter == null) {
+            return;
+        }
+        
+        String fingerprint = fingerprinter.fingerprint(message, throwable, context, loggerName);
+        if(fingerprint != null) {
+            payload.put("fingerprint", fingerprint);
         }
     }
     

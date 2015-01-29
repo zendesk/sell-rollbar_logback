@@ -3,15 +3,24 @@ package com.tapstream.rollbar.fingerprinter;
 import java.util.Map;
 
 /**
- * Delegates to CustomFingerprinter only if throwable is provided and it implements 
+ * Delegates to {@link CustomFingerprinter} only if throwable is provided and it implements 
  * HasFingerprint (or any of its causes implements it). Otherwise returns null indicating 
  * that default Rollbar's algorithm should be used.
  */
 public class DefaultFingerprinter implements Fingerprinter {
     private static final int MAX_CAUSES = 100;
 
-    private CustomFingerprinter customFingerprinter = new CustomFingerprinter();
+    private final CustomFingerprinter customFingerprinter;
 
+    public DefaultFingerprinter() {
+        customFingerprinter = new CustomFingerprinter();
+    }
+    
+    // only for tests
+    DefaultFingerprinter(CustomFingerprinter fingerprinter){
+        this.customFingerprinter = fingerprinter;
+    }
+    
     @Override
     public String fingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName) {
         if (prividesCustomFingerprint(throwable)) {
