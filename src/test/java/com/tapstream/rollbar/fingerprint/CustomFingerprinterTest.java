@@ -113,6 +113,32 @@ public class CustomFingerprinterTest {
     }
     
     @Test
+    public void exceptionInLambdaIgnoresLambdaInstanceNr() {
+        Exception a = new RuntimeException();
+        a.setStackTrace(new StackTraceElement[] {new StackTraceElement("protobuf.ProtoTranslatorImpl$$Lambda$68/978649911", "test", "a", 1)});
+        Exception b = new RuntimeException();
+        b.setStackTrace(new StackTraceElement[] {new StackTraceElement("protobuf.ProtoTranslatorImpl$$Lambda$68/222222222", "test", "a", 1)});
+        
+        String e1 = fingerprinter.fingerprint(null, a, null, null);
+        String e2 = fingerprinter.fingerprint(null, b, null, null);
+        
+        assertThat(e1).isEqualTo(e2);
+    }
+    
+    @Test
+    public void numbersInMethodNamesAreIgnored() {
+        Exception a = new RuntimeException();
+        a.setStackTrace(new StackTraceElement[] {new StackTraceElement("someclass", "test", "a", 1)});
+        Exception b = new RuntimeException();
+        b.setStackTrace(new StackTraceElement[] {new StackTraceElement("someclass", "test1", "a", 1)});
+        
+        String e1 = fingerprinter.fingerprint(null, a, null, null);
+        String e2 = fingerprinter.fingerprint(null, b, null, null);
+        
+        assertThat(e1).isEqualTo(e2);
+    }
+    
+    @Test
     public void exceptionCauseMessageIsIgnored() {
         String e1 = fingerprinter.fingerprint(null, new RuntimeException(new RuntimeException("once")), null, null);
         String e2 = fingerprinter.fingerprint(null, new RuntimeException(new RuntimeException("twice")), null, null);

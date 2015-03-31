@@ -69,7 +69,8 @@ public class CustomFingerprinter implements Fingerprinter {
     }
 
     protected void appendStacktraceElement(MessageDigest digest, StackTraceElement ste) {
-        digest.update(ste.getClassName().getBytes());
+        String className = ste.getClassName().replaceAll(NUMBER, "");
+        digest.update(className.getBytes());
         String methodName = ste.getMethodName().replaceAll(NUMBER, "");
         digest.update(methodName.getBytes());
     }
