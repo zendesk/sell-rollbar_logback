@@ -3,17 +3,17 @@
 	xmlns="http://maven.apache.org/POM/4.0.0"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.tapstream</groupId>
+	<groupId>com.getbase</groupId>
 	<artifactId>rollbar-logback</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1.5</version>
+	<version>0.1.6</version>
 
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>A Rollbar logback appender that includes out of the box support for servlets</description>
-	<url>https://github.com/tapstream/rollbar-logback</url>
+	<url>https://github.com/fstech/rollbar-logback</url>
 
 	<organization>
-		<name>Tapstream</name>
+		<name>Base</name>
 	</organization>
 
 	<licenses>
@@ -22,12 +22,6 @@
 			<url>http://www.opensource.org/licenses/mit-license.php</url>
 		</license>
 	</licenses>
-
-	<scm>
-		<url>git@github.com:tapstream/rollbar-logback.git</url>
-		<connection>scm:git:git@github.com:tapstream/rollbar-logback.git</connection>
-		<developerConnection>scm:git:git@github.com:tapstream/rollbar-logback.git</developerConnection>
-	</scm>
 
 	<developers>
 		<developer>
