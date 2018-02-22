@@ -1,15 +1,14 @@
 package com.tapstream.rollbar;
 
 import com.tapstream.rollbar.fingerprinter.Fingerprinter;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class NotifyBuilder {
     private static final String PERSON_PREFIX = "person.";
@@ -40,52 +39,55 @@ public class NotifyBuilder {
         return value.toString();
     }
 
-    public JSONObject build(String level, String message, Throwable throwable, Map<String, String> context, String loggerName) throws JSONException {
+    public JSONObject build(String level, String message, Throwable throwable, Map<String, String> context, String loggerName) {
+        try {
+            JSONObject payload = new JSONObject();
 
-        JSONObject payload = new JSONObject();
+            // access token
+            payload.put("access_token", this.accessToken);
 
-        // access token
-        payload.put("access_token", this.accessToken);
+            // data
+            JSONObject data = new JSONObject();
 
-        // data
-        JSONObject data = new JSONObject();
-        
-        maybeAddFingerprint(message, throwable, context, loggerName, data);
+            maybeAddFingerprint(message, throwable, context, loggerName, data);
 
-        // general values
-        data.put("environment", this.environment);
-        data.put("level", level);
-        data.put("platform", getValue("platform", context, "java"));
-        data.put("framework", getValue("framework", context, "java"));
-        data.put("language", "java");
-        if (loggerName != null && !loggerName.isEmpty()) {
-            data.put("context", loggerName);
+            // general values
+            data.put("environment", this.environment);
+            data.put("level", level);
+            data.put("platform", getValue("platform", context, "java"));
+            data.put("framework", getValue("framework", context, "java"));
+            data.put("language", "java");
+            if (loggerName != null && !loggerName.isEmpty()) {
+                data.put("context", loggerName);
+            }
+            data.put("timestamp", System.currentTimeMillis() / 1000);
+            data.put("body", getBody(message, throwable));
+            data.put("request", buildRequest(context));
+
+            // Custom data and log message if there's a throwable
+            JSONObject customData = buildCustom(context);
+            if (throwable != null && message != null) {
+                customData.put("log", message);
+            }
+
+            JSONObject person = buildPerson(context);
+            if (person != null) {
+                data.put("person", person);
+            }
+
+            data.put("custom", customData);
+            data.put("client", buildClient(context));
+            data.put("server", serverData);
+            data.put("notifier", notifierData);
+            payload.put("data", data);
+
+            return payload;
+        } catch (JSONException e) {
+            throw new RuntimeException("Failed to create person representation", e);
         }
-        data.put("timestamp", System.currentTimeMillis() / 1000);
-        data.put("body", getBody(message, throwable));
-        data.put("request", buildRequest(context));
-
-        // Custom data and log message if there's a throwable
-        JSONObject customData = buildCustom(context);
-        if (throwable != null && message != null) {
-            customData.put("log", message);
-        }
-        
-        JSONObject person = buildPerson(context);
-        if(person != null){
-            data.put("person", person);
-        }
-
-        data.put("custom", customData);
-        data.put("client", buildClient(context));
-        data.put("server", serverData);
-        data.put("notifier", notifierData);
-        payload.put("data", data);
-
-        return payload;
     }
 
-    private void maybeAddFingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName, JSONObject payload) {
+    private void maybeAddFingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName, JSONObject payload) throws JSONException {
         if(fingerprinter == null) {
             return;
         }
@@ -96,7 +98,7 @@ public class NotifyBuilder {
         }
     }
     
-    private JSONObject buildPerson(Map<String, String> ctx) {
+    private JSONObject buildPerson(Map<String, String> ctx) throws JSONException {
         JSONObject person = new JSONObject();
         for (Entry<String, String> ctxEntry : ctx.entrySet()) {
             String key = ctxEntry.getKey();
@@ -104,14 +106,14 @@ public class NotifyBuilder {
                 person.put(stripPrefix(key, PERSON_PREFIX), ctxEntry.getValue());
             }
         }
-        if (person.keySet().isEmpty()) {
+        if (!person.keys().hasNext()) {
             return null;
         } else {
             return person;
         }
     }
 
-    private JSONObject buildClient(Map<String, String> ctx){
+    private JSONObject buildClient(Map<String, String> ctx) throws JSONException {
         JSONObject client = new JSONObject();
         JSONObject javaScript = new JSONObject();
         javaScript.put("browser", ctx.get(RollbarFilter.REQUEST_USER_AGENT));
@@ -119,7 +121,7 @@ public class NotifyBuilder {
         return client;
     }
     
-    private JSONObject buildCustom(Map<String, String> ctx){
+    private JSONObject buildCustom(Map<String, String> ctx) throws JSONException {
         JSONObject custom = new JSONObject();
         for (Entry<String, String> ctxEntry : ctx.entrySet()){
             String key = ctxEntry.getKey();
@@ -134,7 +136,7 @@ public class NotifyBuilder {
         return value.substring(prefix.length(), value.length());
     }
     
-    private JSONObject buildRequest(Map<String, String> ctx){
+    private JSONObject buildRequest(Map<String, String> ctx) throws JSONException {
         JSONObject request = new JSONObject();
         request.put("url", ctx.get(RollbarFilter.REQUEST_URL));
         request.put("query_string", ctx.get(RollbarFilter.REQUEST_QS));
