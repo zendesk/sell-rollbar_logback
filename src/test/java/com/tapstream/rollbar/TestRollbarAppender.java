@@ -3,6 +3,7 @@ package com.tapstream.rollbar;
 import static org.junit.Assert.*;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -121,7 +122,7 @@ public class TestRollbarAppender {
     }
     
     @Test
-    public void contextContainsRootLoggerName() {
+    public void contextContainsRootLoggerName() throws JSONException {
         rootLogger.info("test message");
 
         HttpRequest request = httpRequester.getRequest();
@@ -131,7 +132,7 @@ public class TestRollbarAppender {
     }
     
     @Test
-    public void contextContainsSubLoggerName() {
+    public void contextContainsSubLoggerName() throws JSONException {
         Logger subLogger = (Logger) LoggerFactory.getLogger("some.logger");
         subLogger.addAppender(appender);
 
