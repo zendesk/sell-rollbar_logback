@@ -25,7 +25,6 @@ public class ManualTest {
     @BeforeClass
     public static void beforeClass() {
             requestor = new ResponseCapturingHttpRequestor();
-            OnConsoleStatusListener.addNewInstanceToContext((Context) LoggerFactory.getILoggerFactory());
             ch.qos.logback.classic.Logger rootLogger = getRootLogger();
             
             RollbarAppender appender = new RollbarAppender();
