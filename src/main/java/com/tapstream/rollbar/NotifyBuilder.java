@@ -20,7 +20,7 @@ public class NotifyBuilder {
     private final Fingerprinter fingerprinter;
 
     public NotifyBuilder(String accessToken, String environment, ServerDataProvider serverDataProvider,
-                    NotifierDataProvider notifierDataProvider, Fingerprinter fingerprinter) throws JSONException, RollbarException {
+                         NotifierDataProvider notifierDataProvider, Fingerprinter fingerprinter) throws JSONException, RollbarException {
         this.accessToken = accessToken;
         this.environment = environment;
         this.notifierData = notifierDataProvider.getNotifierData();
@@ -39,7 +39,7 @@ public class NotifyBuilder {
         return value.toString();
     }
 
-    public JSONObject build(String level, String message, Throwable throwable, Map<String, String> context, String loggerName) {
+    public JSONObject build(String level, Message message, Throwable throwable, Map<String, String> context, String loggerName) {
         try {
             JSONObject payload = new JSONObject();
 
@@ -49,7 +49,7 @@ public class NotifyBuilder {
             // data
             JSONObject data = new JSONObject();
 
-            maybeAddFingerprint(message, throwable, context, loggerName, data);
+            maybeAddFingerprint(message.getText(), throwable, context, loggerName, data);
 
             // general values
             data.put("environment", this.environment);
@@ -61,13 +61,17 @@ public class NotifyBuilder {
                 data.put("context", loggerName);
             }
             data.put("timestamp", System.currentTimeMillis() / 1000);
-            data.put("body", getBody(message, throwable));
+            data.put("body", getBody(message.getText(), throwable));
             data.put("request", buildRequest(context));
 
             // Custom data and log message if there's a throwable
             JSONObject customData = buildCustom(context);
-            if (throwable != null && message != null) {
-                customData.put("log", message);
+            if (throwable != null && message.getText() != null) {
+                customData.put("log", message.getText());
+            }
+
+            if (message.getAdditionalArguments().length() > 0) {
+                customData.put("args", message.getAdditionalArguments());
             }
 
             JSONObject person = buildPerson(context);
@@ -88,16 +92,16 @@ public class NotifyBuilder {
     }
 
     private void maybeAddFingerprint(String message, Throwable throwable, Map<String, String> context, String loggerName, JSONObject payload) throws JSONException {
-        if(fingerprinter == null) {
+        if (fingerprinter == null) {
             return;
         }
-        
+
         String fingerprint = fingerprinter.fingerprint(message, throwable, context, loggerName);
-        if(fingerprint != null) {
+        if (fingerprint != null) {
             payload.put("fingerprint", fingerprint);
         }
     }
-    
+
     private JSONObject buildPerson(Map<String, String> ctx) throws JSONException {
         JSONObject person = new JSONObject();
         for (Entry<String, String> ctxEntry : ctx.entrySet()) {
@@ -120,47 +124,47 @@ public class NotifyBuilder {
         client.put("javascript", javaScript);
         return client;
     }
-    
+
     private JSONObject buildCustom(Map<String, String> ctx) throws JSONException {
         JSONObject custom = new JSONObject();
-        for (Entry<String, String> ctxEntry : ctx.entrySet()){
+        for (Entry<String, String> ctxEntry : ctx.entrySet()) {
             String key = ctxEntry.getKey();
-            if (!key.startsWith(RollbarFilter.REQUEST_PREFIX) && !key.startsWith(PERSON_PREFIX)){
+            if (!key.startsWith(RollbarFilter.REQUEST_PREFIX) && !key.startsWith(PERSON_PREFIX)) {
                 custom.put(key, ctxEntry.getValue());
             }
         }
         return custom;
     }
-    
-    private String stripPrefix(String value, String prefix){
+
+    private String stripPrefix(String value, String prefix) {
         return value.substring(prefix.length(), value.length());
     }
-    
+
     private JSONObject buildRequest(Map<String, String> ctx) throws JSONException {
         JSONObject request = new JSONObject();
         request.put("url", ctx.get(RollbarFilter.REQUEST_URL));
         request.put("query_string", ctx.get(RollbarFilter.REQUEST_QS));
-        
+
         JSONObject headers = new JSONObject();
         JSONObject params = new JSONObject();
-        
-        for (Entry<String, String> ctxEntry : ctx.entrySet()){
+
+        for (Entry<String, String> ctxEntry : ctx.entrySet()) {
             String key = ctxEntry.getKey();
-            if (key.startsWith(RollbarFilter.REQUEST_HEADER_PREFIX)){
+            if (key.startsWith(RollbarFilter.REQUEST_HEADER_PREFIX)) {
                 headers.put(stripPrefix(key, RollbarFilter.REQUEST_HEADER_PREFIX), ctxEntry.getValue());
-            } else if (key.startsWith(RollbarFilter.REQUEST_PARAM_PREFIX)){
+            } else if (key.startsWith(RollbarFilter.REQUEST_PARAM_PREFIX)) {
                 params.put(stripPrefix(key, RollbarFilter.REQUEST_PARAM_PREFIX), ctxEntry.getValue());
             }
         }
-        
+
         request.put("headers", headers);
-        
+
         String method = ctx.get(RollbarFilter.REQUEST_METHOD);
         if (method != null) {
             request.put("method", method);
             request.put(method, params);
         }
-        
+
         request.put("user_ip", ctx.get(RollbarFilter.REQUEST_REMOTE_ADDR));
         return request;
     }
@@ -176,7 +180,7 @@ public class NotifyBuilder {
                 traces.add(0, createTrace(throwable));
                 throwable = throwable.getCause();
             } while (throwable != null);
-            
+
             // TODO consider in the future: if description is present it becomes the label for rollbar item instead of exception's message
             // traces.get(0).getJSONObject("exception").put("description", "Something went wrong while trying to save the user object");
 

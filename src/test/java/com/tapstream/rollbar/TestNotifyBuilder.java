@@ -32,7 +32,7 @@ public class TestNotifyBuilder {
         when(serverDataProvider.getServerData()).thenReturn(new JSONObject("{host:abc, ip:10.20.30.40}"));
 
         NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
-        JSONObject result = builder.build("lvl", "msg", null, new HashMap<String, String>(), "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, new HashMap<String, String>(), "logger.name");
 
         JSONObject data = result.getJSONObject("data");
         assertNotNull(data.getJSONObject("server"));
@@ -46,7 +46,7 @@ public class TestNotifyBuilder {
         when(notifierDataProvider.getNotifierData()).thenReturn(new JSONObject("{name:abc, version:'12.0'}"));
 
         NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
-        JSONObject result = builder.build("lvl", "msg", null, new HashMap<String, String>(), "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, new HashMap<String, String>(), "logger.name");
 
         JSONObject data = result.getJSONObject("data");
         assertNotNull(data.getJSONObject("notifier"));
@@ -63,7 +63,7 @@ public class TestNotifyBuilder {
         ctx.put("person.username", "john");
         ctx.put("person.email", "john@example.org");
 
-        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, ctx, "logger.name");
 
         assertEquals(true, result.getJSONObject("data").has("person"));
         JSONObject person = result.getJSONObject("data").getJSONObject("person");
@@ -77,7 +77,7 @@ public class TestNotifyBuilder {
         NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         Map<String, String> ctx = new HashMap<>();
 
-        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, ctx, "logger.name");
 
         assertFalse(result.getJSONObject("data").has("person"));
     }
@@ -88,7 +88,7 @@ public class TestNotifyBuilder {
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "PUT");
         ctx.put("request.param.param1", "param1val");
-        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, ctx, "logger.name");
 
         JSONObject req = result.getJSONObject("data").getJSONObject("request");
         assertEquals("PUT", req.get("method"));
@@ -101,7 +101,7 @@ public class TestNotifyBuilder {
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "PATCH");
         ctx.put("request.param.param1", "param1val");
-        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, ctx, "logger.name");
 
         JSONObject req = result.getJSONObject("data").getJSONObject("request");
         assertEquals("PATCH", req.get("method"));
@@ -114,7 +114,7 @@ public class TestNotifyBuilder {
         Map<String, String> ctx = new HashMap<>();
         ctx.put("request.method", "DELETE");
         ctx.put("request.param.param1", "param1val");
-        JSONObject result = builder.build("lvl", "msg", null, ctx, "logger.name");
+        JSONObject result = builder.build("lvl", new Message("msg"), null, ctx, "logger.name");
 
         JSONObject req = result.getJSONObject("data").getJSONObject("request");
         assertEquals("DELETE", req.get("method"));
@@ -130,7 +130,7 @@ public class TestNotifyBuilder {
             }
         });
         
-        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        JSONObject result = builder.build("lvl", new Message("msg"), new RuntimeException(), new HashMap<String,String>(), "x");
         
         assertNotNull(result.getJSONObject("data").get("fingerprint"));
     }
@@ -139,7 +139,7 @@ public class TestNotifyBuilder {
     public void doesNotSetFingerprintWhenFingerprinterMissing() throws Exception{
         NotifyBuilder builder = new NotifyBuilder("key", "env", serverDataProvider, notifierDataProvider, null);
         
-        JSONObject result = builder.build("lvl", "msg", new RuntimeException(), new HashMap<String,String>(), "x");
+        JSONObject result = builder.build("lvl", new Message("msg"), new RuntimeException(), new HashMap<String,String>(), "x");
         
         assertFalse(result.getJSONObject("data").has("fingerprint"));
         
